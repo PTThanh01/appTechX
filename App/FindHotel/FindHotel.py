@@ -272,6 +272,7 @@ def filter_locations(price_filter, rooms_filter, keyword_filter):
             filtered_destinations.append(destination)
 
     return filtered_destinations
+
 # Check price
 def check_price_filter(location_price, filter_option):
     if filter_option == "Any":
