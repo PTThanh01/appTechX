@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import customtkinter as ctk
 from customtkinter import CTkScrollableFrame
-from customtkinter import CTkComboBox, CTkLabel, CTkButton, CTkOptionMenu
+from customtkinter import CTkComboBox, CTkLabel, CTkButton
 
 
 # Create window customtkinter
 root = ctk.CTk()
 root.title("Find Hotel")
-root.geometry("600x600")
+root.geometry("700x600")
 
 
 
@@ -123,8 +123,6 @@ apply_filter_button = CTkButton(
 )
 apply_filter_button.grid(row=3, column=4, columnspan=2, pady=5)
 
-# Thêm biến toàn cục để lưu trữ danh sách đã lọc
-filtered_destinations = []
 
 def apply_filters(price_filter, rooms_filter, keyword_filter):
     # Logic to filter locations based on price and rooms
@@ -221,18 +219,25 @@ def bubble_sort_destinations_by_price(dest_buttons, sort_order):
             dest1_text = dest_button1.cget("text")
             dest2_text = dest_button2.cget("text")
 
-            price1_str = location_info.get(dest1_text, {}).get("price", "0")
-            price2_str = location_info.get(dest2_text, {}).get("price", "0")
+            price1_str = extract_price_from_text(dest1_text)
+            price2_str = extract_price_from_text(dest2_text)
 
-            # Remove the dollar sign and convert to integers
-            price1 = int(price1_str.replace('$', ''))
-            price2 = int(price2_str.replace('$', ''))
+            # Extract the numeric part of the price (remove "$" sign)
+            price1 = int(''.join(char for char in price1_str if char.isdigit()))
+            price2 = int(''.join(char for char in price2_str if char.isdigit()))
 
             if (sort_order == "asc" and price1 > price2) or \
                (sort_order == "desc" and price1 < price2):
                 dest_buttons[j], dest_buttons[j+1] = dest_buttons[j+1], dest_buttons[j]
-  
-             
+
+# Hàm trích xuất giá từ văn bản của nút
+def extract_price_from_text(text):
+    lines = text.split('\n')
+    for line in lines:
+        if line.startswith("Giá:"):
+            return line.split(":")[1].strip()
+    return "$0"
+
 # Create a sort function for each sorting option
 def sort_by_name_az():
     apply_filters(price_combobox.get(), rooms_combobox.get(), search_entry.get())  # Áp dụng bộ lọc
@@ -260,54 +265,21 @@ def update_button_positions():
         button.grid(row=i, column=0, padx=5, pady=5, sticky="ew")
 
 
-sort_frame = ctk.CTkFrame(root)
-sort_frame.grid(row=0, column=3, padx=5, pady=5, rowspan=6, sticky="nsew")
+# sort_frame = ctk.CTkFrame(root)
+# sort_frame.grid(row=0, column=3, padx=5, pady=5, rowspan=6, sticky="nsew")
 
-# sort_name_az_button = ctk.CTkButton(sort_frame, text="Sort by Name (A-Z)", command=sort_by_name_az)
-# sort_name_az_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+sort_name_az_button = ctk.CTkButton(filter_frame, text="Sort by Name (A-Z)", command=sort_by_name_az)
+sort_name_az_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-# sort_name_za_button = ctk.CTkButton(sort_frame, text="Sort by Name (Z-A)", command=sort_by_name_za)
-# sort_name_za_button.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
+sort_name_za_button = ctk.CTkButton(filter_frame, text="Sort by Name (Z-A)", command=sort_by_name_za)
+sort_name_za_button.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
 
-# sort_price_low_high_button = ctk.CTkButton(sort_frame, text="Sort by Price (Low to High)", command=sort_by_price_low_high)
-# sort_price_low_high_button.grid(row=2, column=2, padx=5, pady=5, sticky="ew")
+sort_price_low_high_button = ctk.CTkButton(filter_frame, text="Sort by Price (Low to High)", command=sort_by_price_low_high)
+sort_price_low_high_button.grid(row=2, column=2, padx=5, pady=5, sticky="ew")
 
-# sort_price_high_low_button = ctk.CTkButton(sort_frame, text="Sort by Price (High to Low)", command=sort_by_price_high_low)
-# sort_price_high_low_button.grid(row=3, column=2, padx=5, pady=5, sticky="ew")
+sort_price_high_low_button = ctk.CTkButton(filter_frame, text="Sort by Price (High to Low)", command=sort_by_price_high_low)
+sort_price_high_low_button.grid(row=3, column=2, padx=5, pady=5, sticky="ew")
    
-
-sort_option_var = ctk.StringVar()
-sort_option_var.set("Sort by Name (A-Z)")  # Set the default sorting option
-
-# Create an option menu for selecting sorting options
-sort_option_menu = ctk.CTkOptionMenu(sort_frame, sort_option_var, "Sort by Name (A-Z)", "Sort by Name (Z-A)", "Sort by Price (Low to High)", "Sort by Price (High to Low)")
-sort_option_menu.grid(row=4, column=2, padx=5, pady=5, sticky="ew")
-
-
-# Update the apply_filter_button command to remove the lambda function
-apply_filter_button = CTkButton(
-    filter_frame,
-    text="Apply Filters",
-    command=lambda: sort_destinations()
-)
-apply_filter_button.grid(row=3, column=4, columnspan=2, pady=5)
-
-
-# Function to sort destinations based on the selected sorting option
-def sort_destinations():
-    apply_filters(price_combobox.get(), rooms_combobox.get(), search_entry.get())  # Apply filters
-    sort_option = sort_option_var.get()
-
-    if sort_option == "Sort by Name (A-Z)":
-        bubble_sort_destinations_by_name(destination_buttons, "asc")
-    elif sort_option == "Sort by Name (Z-A)":
-        bubble_sort_destinations_by_name(destination_buttons, "desc")
-    elif sort_option == "Sort by Price (Low to High)":
-        bubble_sort_destinations_by_price(destination_buttons, "asc")
-    elif sort_option == "Sort by Price (High to Low)":
-        bubble_sort_destinations_by_price(destination_buttons, "desc")
-
-    update_button_positions()
     
 # Start the user interface
 root.mainloop()

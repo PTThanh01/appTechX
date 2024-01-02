@@ -12,7 +12,7 @@ from customtkinter import CTkComboBox, CTkLabel, CTkButton
 # Create window customtkinter
 root = ctk.CTk()
 root.title("Find Hotel")
-root.geometry("600x600")
+root.geometry("700x600")
 
 
 
@@ -115,25 +115,49 @@ search_entry.grid(row=2, column=5, padx=5, pady=5, sticky="w")
 # Bind the key release event to the apply_filters function
 search_entry.bind("<KeyRelease>", lambda event: apply_filters(price_combobox.get(), rooms_combobox.get(), search_entry.get()))
 
-# Update the apply_filter_button command to remove the lambda function
+def apply_sort_filter(sort_option):
+    if "Name (A-Z)" in sort_option:
+        bubble_sort_destinations_by_name(destination_buttons, "asc")
+    elif "Name (Z-A)" in sort_option:
+        bubble_sort_destinations_by_name(destination_buttons, "desc")
+    elif "Price (Low to High)" in sort_option:
+        bubble_sort_destinations_by_price(destination_buttons, "asc")
+    elif "Price (High to Low)" in sort_option:
+        bubble_sort_destinations_by_price(destination_buttons, "desc")
+
+    update_button_positions()
+
+# Create a Combobox for sorting
+sort_filter_label = CTkLabel(filter_frame, text="Sort:")
+sort_filter_label.grid(row=4, column=4, padx=5, pady=5, sticky="w")
+sort_combobox = CTkComboBox(filter_frame, values=["Sort by Name (A-Z)", "Sort by Name (Z-A)", "Sort by Price (Low to High)", "Sort by Price (High to Low)"])
+sort_combobox.grid(row=4, column=5,  padx=5, pady=5, sticky="ew")
+
+# Bind the function to Combobox selection changes
+sort_combobox.bind("<<ComboboxSelected>>", lambda event: apply_sort_filter(sort_combobox.get()))
+
+
+
+# Bind the key release event to the apply_filters function
 apply_filter_button = CTkButton(
     filter_frame,
     text="Apply Filters",
-    command=lambda: apply_filters(price_combobox.get(), rooms_combobox.get(), search_entry.get())
+    command=lambda: apply_filters(price_combobox.get(), rooms_combobox.get(), search_entry.get(), sort_combobox.get())
 )
 apply_filter_button.grid(row=3, column=4, columnspan=2, pady=5)
 
-# Thêm biến toàn cục để lưu trữ danh sách đã lọc
-filtered_destinations = []
 
-def apply_filters(price_filter, rooms_filter, keyword_filter):
-    # Logic to filter locations based on price and rooms
+def apply_filters(price_filter, rooms_filter, keyword_filter, sort_option=None):
+    # Logic to filter locations based on price, rooms, keyword, and sort_option
     global filtered_destinations
     filtered_destinations = filter_locations(price_filter, rooms_filter, keyword_filter)
+
+    if sort_option:
+        apply_sort_filter(sort_option)
+
     # Update destination buttons with filtered destinations
     update_destination_buttons(filtered_destinations, price_filter, rooms_filter)
-    # Redraw the graph with the updated filters
-    # draw_graph(G, node_positions)
+
 
 # Function to filter locations based on price and rooms
 def filter_locations(price_filter, rooms_filter, keyword_filter):
@@ -267,21 +291,7 @@ def update_button_positions():
         button.grid(row=i, column=0, padx=5, pady=5, sticky="ew")
 
 
-sort_frame = ctk.CTkFrame(root)
-sort_frame.grid(row=0, column=3, padx=5, pady=5, rowspan=6, sticky="nsew")
 
-sort_name_az_button = ctk.CTkButton(sort_frame, text="Sort by Name (A-Z)", command=sort_by_name_az)
-sort_name_az_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
-
-sort_name_za_button = ctk.CTkButton(sort_frame, text="Sort by Name (Z-A)", command=sort_by_name_za)
-sort_name_za_button.grid(row=1, column=2, padx=5, pady=5, sticky="ew")
-
-sort_price_low_high_button = ctk.CTkButton(sort_frame, text="Sort by Price (Low to High)", command=sort_by_price_low_high)
-sort_price_low_high_button.grid(row=2, column=2, padx=5, pady=5, sticky="ew")
-
-sort_price_high_low_button = ctk.CTkButton(sort_frame, text="Sort by Price (High to Low)", command=sort_by_price_high_low)
-sort_price_high_low_button.grid(row=3, column=2, padx=5, pady=5, sticky="ew")
-   
     
 # Start the user interface
 root.mainloop()

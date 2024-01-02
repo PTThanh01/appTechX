@@ -155,11 +155,6 @@ def sort_destinations(destinations, sort_option):
 
 
 
-
-
-
-
-
 def apply_filters(price_filter, rooms_filter, keyword_filter):
     # Clear the canvas before applying filters
     # Logic to filter locations based on price and rooms
